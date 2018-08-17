@@ -1,8 +1,8 @@
 var pEJS = function(params, tag_id) {
   var particle = new particleJS(params, tag_id);
-  console.log(particle.particleJS);
-  particle.particleJS.fn.createParticle();
-  particle.particleJS.fn.drawParticles();
+  console.log(particle);
+  particle.fn.createParticle();
+  particle.fn.drawParticles();
 };
 
 

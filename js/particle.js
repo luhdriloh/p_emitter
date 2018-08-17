@@ -1,4 +1,4 @@
-var particleJS = function(params, tag_id) {
+var particleJS = function(params, tag_id, on_death) {
 
   // get the canvas context for this particle emmiter
   var canvas_el = document.querySelector('#' + tag_id + ' > .particles-emitter-js-canvas-el');
@@ -112,7 +112,7 @@ var particleJS = function(params, tag_id) {
 
     // image
 
-  }
+  };
 
   // just draw a circle for now
   particleJS.fn.particle.prototype.draw = function() {
@@ -126,12 +126,12 @@ var particleJS = function(params, tag_id) {
     particleJS.canvas.ctx.arc(particle.position.x, particle.position.y, radius, 0, Math.PI * 2, false);
     particleJS.canvas.ctx.closePath();
     particleJS.canvas.ctx.fill();
-  }
+  };
 
   // create particles
   particleJS.fn.createParticle = function() {
     particleJS.particles.push(new particleJS.fn.particle());
-  }
+  };
 
   particleJS.fn.drawParticles = function() {
     var particle;
@@ -139,7 +139,7 @@ var particleJS = function(params, tag_id) {
       particle = particleJS.particles[i];
       particle.draw();
     }
-  }
+  };
 
 
   /* ---------- particleJS functions - particles interaction ------------ */
@@ -155,7 +155,9 @@ var particleJS = function(params, tag_id) {
   particleJS.fn.canvasInit();
   particleJS.fn.canvasSize();
   particleJS.fn.canvasPaint();
-}
+
+  return particleJS;
+};
 
 /* ---------- particles.js functions - start ------------ */
 
@@ -202,7 +204,7 @@ window.cancelRequestAnimFrame = ( function() {
     window.mozCancelRequestAnimationFrame    ||
     window.oCancelRequestAnimationFrame      ||
     window.msCancelRequestAnimationFrame     ||
-    clearTimeout
+    clearTimeout;
 } )();
 
 
@@ -219,12 +221,12 @@ function hexToRgb(hex){
       g: parseInt(result[2], 16),
       b: parseInt(result[3], 16)
   } : null;
-};
+}
 
 
 function returnNumberInRange(min, max) {
   return Math.random() * Math.abs(max - min) + min;
-};
+}
 
 
 function isInArray(value, array) {
