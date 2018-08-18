@@ -96,8 +96,7 @@ var particleManager = function(params, tag_id, on_death) {
   particleManager.fn.particle = function() {
     // position
     this.position = {};
-    this.position.x = particleManager.position.x;
-    this.position.y = particleManager.position.y;
+    Object.assign(this.position, particleManager.position);
 
     // direction
     var angle = returnNumberInRange(particleManager.direction.min, particleManager.direction.max);
