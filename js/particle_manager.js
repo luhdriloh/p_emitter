@@ -1,5 +1,5 @@
 var particleManager = function(params, tag_id, on_death) {
-
+  console.log(params);
   // get the canvas context for this particle emmiter
   var canvas_el = document.querySelector('#' + tag_id + ' > .particles-emitter-js-canvas-el');
 
@@ -10,7 +10,7 @@ var particleManager = function(params, tag_id, on_death) {
       w: canvas_el.offsetWidth,
       h: canvas_el.offsetHeight
     },
-    spawn_position: {
+    position: {
       x: 400,
       y: 400
     },
@@ -95,11 +95,14 @@ var particleManager = function(params, tag_id, on_death) {
   /* --------- particleManager functions - particles ----------- */
   particleManager.fn.particle = function() {
     // position
-    this.position = particleManager.spawn_position;
+    this.position = {};
+    this.position.x = particleManager.position.x;
+    this.position.y = particleManager.position.y;
 
     // direction
     var angle = returnNumberInRange(particleManager.direction.min, particleManager.direction.max);
     var speedMagnitude = returnNumberInRange(particleManager.speed.min, particleManager.speed.max);
+    console.log(angle);
 
     this.velocity = {};
     this.velocity.x = speedMagnitude * Math.cos(toRadians(angle));
@@ -119,25 +122,27 @@ var particleManager = function(params, tag_id, on_death) {
 
   // just draw a circle for now
   particleManager.fn.particle.prototype.draw = function() {
-    var particle = this;
-    var radius = particle.radius;
+    var p = this;
+    var radius = p.radius;
 
     particleManager.canvas.ctx.fillStyle = '#fff';
     particleManager.canvas.ctx.beginPath();
 
     // just draw a circle for now
-    particleManager.canvas.ctx.arc(particle.position.x, particle.position.y, radius, 0, Math.PI * 2, false);
+    particleManager.canvas.ctx.arc(p.position.x, p.position.y, radius, 0, Math.PI * 2, false);
     particleManager.canvas.ctx.closePath();
     particleManager.canvas.ctx.fill();
 
     // TODO: make it so that images are able to be drawn
   };
 
-  particleManager.fn.particle.prototype.update = function() {
+  particleManager.fn.updateParticles = function() {
     var particle;
 
     for (var i = 0; i < particleManager.particles.length; i++) {
+      console.log("Update");
       particle = particleManager.particles[i];
+      console.log(particle.velocity);
       particle.position.x += particle.velocity.x;
       particle.position.y += particle.velocity.y;
     }
@@ -151,12 +156,13 @@ var particleManager = function(params, tag_id, on_death) {
     }
   };
 
+
   particleManager.fn.drawParticles = function() {
     var particle;
+    particleManager.fn.updateParticles();
 
     for (var i = 0; i < particleManager.particles.length; i++) {
       particle = particleManager.particles[i];
-      particle.update();
       particle.draw();
     }
   };
@@ -244,6 +250,10 @@ function toRadians (angle) {
 
 
 function returnNumberInRange(min, max) {
+  if (min == max) {
+    return max;
+  }
+
   return Math.random() * Math.abs(max - min) + min;
 }
 

@@ -1,6 +1,6 @@
 {
   "emitter": {
-    "active": true,
+    "enabled": true,
     "spawn_position": {
       "x": 200,
       "y": 200
@@ -13,6 +13,9 @@
       "number_of_particles": 10,
       "burst": 0,
       "layer": 0,
+    },
+    "fn": {
+      "vendors": {}
     }
   },
   "particle_manager": {
@@ -24,12 +27,10 @@
       "gravity_direction_max": 270,
       "gravity_magnitude": 0,
       "force": 0
-    }
-  },
-  "particles": {
+    },
     "radius": {
-      "min": 50,
-      "max": 100,
+      "min": 3,
+      "max": 20,
       "delta": 0
     },
     "speed": {
