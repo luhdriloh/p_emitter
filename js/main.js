@@ -1,1 +1,1 @@
-pEmitterJS('particles-js', null);
+particleEmitterJS('particles-js', null);
