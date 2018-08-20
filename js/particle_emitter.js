@@ -40,13 +40,13 @@ var particleEmitter = function(params, tag_id) {
         "gravity_magnitude": 0,
         "force": 0
       },
-      position: {
-        x: canvas_el.offsetWidth / 2,
-        y: canvas_el.offsetHeight / 2
+      "position": {
+        "x": canvas_el.offsetWidth / 2,
+        "y": canvas_el.offsetHeight / 2
       },
       "radius": {
         "min": 1,
-        "max": 40,
+        "max": 20,
         "delta": 0
       },
       // pixels a second
@@ -56,7 +56,7 @@ var particleEmitter = function(params, tag_id) {
         "delta": 0
       },
       "direction": {
-        "min": 0,
+        "min": 270,
         "max": 360,
         "delta": 0
       },

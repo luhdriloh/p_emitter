@@ -107,7 +107,7 @@ var particleManager = function(params, tag_id) {
     Object.assign(this.position, particleManager.position);
 
     // direction
-    var angle = returnNumberInRange(particleManager.direction.min, particleManager.direction.max);
+    var angle = returnNumberInRange(particleManager.direction.min, particleManager.direction.max) * -1;
     var speedMagnitude = returnNumberInRange(particleManager.speed.min, particleManager.speed.max);
 
     this.velocity = {};
@@ -323,7 +323,7 @@ function hexToRgb(hex){
 
 
 function toRadians (angle) {
-  return angle * (Math.PI / 180);
+  return (angle * Math.PI) / 180;
 }
 
 
@@ -332,7 +332,7 @@ function returnNumberInRange(min, max) {
     return max;
   }
 
-  return Math.random() * Math.abs(max - min) + min;
+  return (Math.random() * Math.abs(max - min)) + min;
 }
 
 
