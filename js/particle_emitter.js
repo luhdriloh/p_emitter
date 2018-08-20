@@ -45,18 +45,18 @@ var particleEmitter = function(params, tag_id) {
         "y": canvas_el.offsetHeight / 2
       },
       "radius": {
-        "min": 1,
-        "max": 20,
-        "delta": 0
+        "min": 10,
+        "max": 30,
+        "delta": -10
       },
       // pixels a second
       "speed": {
         "min": 30,
-        "max": 200,
+        "max": 60,
         "delta": 0
       },
       "direction": {
-        "min": 270,
+        "min": 0,
         "max": 360,
         "delta": 0
       },

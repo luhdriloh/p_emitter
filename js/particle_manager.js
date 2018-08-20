@@ -107,15 +107,16 @@ var particleManager = function(params, tag_id) {
     Object.assign(this.position, particleManager.position);
 
     // direction
-    var angle = returnNumberInRange(particleManager.direction.min, particleManager.direction.max) * -1;
-    var speedMagnitude = returnNumberInRange(particleManager.speed.min, particleManager.speed.max);
+    this.angle = returnNumberInRange(particleManager.direction.min, particleManager.direction.max) * -1;
+    this.speedMagnitude = returnNumberInRange(particleManager.speed.min, particleManager.speed.max);
 
     this.velocity = {};
-    this.velocity.x = speedMagnitude * Math.cos(toRadians(angle));
-    this.velocity.y = speedMagnitude * Math.sin(toRadians(angle));
+    this.velocity.x = this.speedMagnitude * Math.cos(toRadians(this.angle));
+    this.velocity.y = this.speedMagnitude * Math.sin(toRadians(this.angle));
 
     // radius
     this.radius = returnNumberInRange(particleManager.radius.min, particleManager.radius.max);
+    this.currentRadius = this.radius;
 
     // color
     this.colors = {};
@@ -171,6 +172,11 @@ var particleManager = function(params, tag_id) {
 
     var newRgbColor = colorPercentChange(current, target, particle.lifetimeDone);
     particle.currentColor = rgbToHex(newRgbColor);
+
+    particle.currentRadius += percentSecond * particleManager.radius.delta;
+    particle.speedMagnitude += percentSecond * particleManager.speed.delta;
+    particle.velocity.x = particle.speedMagnitude * Math.cos(toRadians(particle.angle));
+    particle.velocity.y = particle.speedMagnitude * Math.sin(toRadians(particle.angle));
   };
 
 
@@ -182,7 +188,7 @@ var particleManager = function(params, tag_id) {
     particleManager.canvas.ctx.beginPath();
 
     // just draw a circle for now
-    particleManager.canvas.ctx.arc(particle.position.x, particle.position.y, particle.radius, 0, Math.PI * 2, false);
+    particleManager.canvas.ctx.arc(particle.position.x, particle.position.y, particle.currentRadius, 0, Math.PI * 2, false);
     particleManager.canvas.ctx.closePath();
     particleManager.canvas.ctx.fill();
 
@@ -202,13 +208,13 @@ var particleManager = function(params, tag_id) {
       }
 
       // check the particle for any issues
-      if (particle.outOfBounds(particleManager.canvas) || particle.isDead())
+      particle.update(delta);
+
+      if (particle.outOfBounds(particleManager.canvas) || particle.isDead() || particle.currentRadius <= 0)
       {
         particle.inUse = false;
         particleManager.particles_not_used_indexes.push(i);
       }
-
-      particle.update(delta);
     }
   };
 
