@@ -152,12 +152,13 @@ var particleManager = function(params, tag_id) {
 
 
 
-  particleManager.fn.particle.prototype.update = function() {
+  particleManager.fn.particle.prototype.update = function(delta) {
     var particle = this;
+    var percentSecond = delta / 1000;
 
     // determine new position
-    particle.position.x += particle.velocity.x;
-    particle.position.y += particle.velocity.y;
+    particle.position.x += particle.velocity.x * percentSecond;
+    particle.position.y += particle.velocity.y * percentSecond;
 
     // determine lifetime
     particle.lifetimeDone = (Date.now() - particle.birth) / particle.lifetime;
@@ -169,7 +170,6 @@ var particleManager = function(params, tag_id) {
         ? particle.colors.end : particle.colors.middle;
 
     var newRgbColor = colorPercentChange(current, target, particle.lifetimeDone);
-    console.log(newRgbColor);
     particle.currentColor = rgbToHex(newRgbColor);
   };
 
@@ -190,7 +190,7 @@ var particleManager = function(params, tag_id) {
   };
 
 
-  particleManager.fn.updateParticles = function() {
+  particleManager.fn.updateParticles = function(delta) {
     var particle;
 
     for (var i = particleManager.particles.length - 1; i >= 0; i--) {
@@ -201,7 +201,7 @@ var particleManager = function(params, tag_id) {
         continue;
       }
 
-      particle.update();
+      particle.update(delta);
 
       // get a birth percent that you can do different things with
       // this will help in changing the color as the particle gets older

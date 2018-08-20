@@ -17,7 +17,8 @@ var particleEmitter = function(params, tag_id) {
       },
       "delay": {
         "start_delay": 0,
-        "delta_between_emission": 0
+        "last_emission_time": 0,
+        "delta_between_emission": 100
       },
       "general": {
         "number_of_particles": 1,
@@ -47,9 +48,10 @@ var particleEmitter = function(params, tag_id) {
         "max": 10,
         "delta": 0
       },
+      // pixels a second
       "speed": {
-        "min": 1,
-        "max": 5,
+        "min": 10,
+        "max": 100,
         "delta": 0
       },
       "direction": {
@@ -138,11 +140,15 @@ var particleEmitter = function(params, tag_id) {
 
 
   particleEmitter.emitter.fn.draw = function() {
+    var now = Date.now();
+    var emissionDelta = now - particleEmitter.emitter.delay.last_emission_time;
+    particleEmitter.emitter.delay.last_emission_time = now;
+
     // have a sleep timer for the emission delay or the start delay
     particleEmitter.emitter.fn.canvasPaint();
 
     // create the necessary particles, update
-    particleEmitter.emitter.particleManager.fn.updateParticles();
+    particleEmitter.emitter.particleManager.fn.updateParticles(emissionDelta);
     particleEmitter.emitter.particleManager.fn.createParticles(particleEmitter.emitter.general.number_of_particles);
     particleEmitter.emitter.particleManager.fn.drawParticles();
 
@@ -166,9 +172,11 @@ var particleEmitter = function(params, tag_id) {
 
   /* ---------- particle emitter functions - particleEmitter ------------ */
 
-  particleEmitter.emitter.fn.start = function() {
+  particleEmitter.emitter.fn.start = async function() {
     particleEmitter.emitter.fn.convertColorsToRgb();
     particleEmitter.emitter.particleManager = new particleManager(particleEmitter.particle_manager, tag_id);
+
+    await sleep(particleEmitter.emitter.delay.start_delay);
     particleEmitter.emitter.fn.draw();
 
     // sleep for the emission
@@ -194,6 +202,10 @@ Object.deepExtend = function(destination, source) {
   return destination;
 };
 
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 function hexToRgb(hex){
   // By Tim Down - http://stackoverflow.com/a/5624139/3493650
