@@ -107,13 +107,12 @@ var particleManager = function(params, tag_id) {
     // radius
     this.radius = returnNumberInRange(particleManager.radius.min, particleManager.radius.max);
 
-    // lifetime
-    this.lifetime = returnNumberInRange(particleManager.lifetime.min, particleManager.lifetime.max);
-
     // color
     this.color = particleManager.color.start;
 
-    // image
+    // lifetime
+    this.birth = Date.now();
+    this.lifetime = returnNumberInRange(particleManager.lifetime.min, particleManager.lifetime.max);
   };
 
   // just draw a circle for now
@@ -145,6 +144,14 @@ var particleManager = function(params, tag_id) {
     return false;
   };
 
+  // check if the particle
+  particleManager.fn.particle.prototype.isDead = function(bounds) {
+    var particle = this;
+    console.log(Date.now() - particle.birth);
+    return Date.now() - particle.birth > particle.lifetime;
+  }
+
+
   particleManager.fn.updateParticles = function() {
     var particle;
 
@@ -153,13 +160,14 @@ var particleManager = function(params, tag_id) {
       particle.position.x += particle.velocity.x;
       particle.position.y += particle.velocity.y;
 
+      // get a birth percent that you can do different things with
+      // this will help in changing the color as the particle gets older
+
       // check the particle for any issues
-      if (particle.outOfBounds(particleManager.canvas))
+      if (particle.outOfBounds(particleManager.canvas) || particle.isDead())
       {
         particleManager.particles = particleManager.fn.removeParticle(particle);
       }
-
-      // check if the particles lifetime is over
     }
   };
 

@@ -78,8 +78,8 @@ var particleEmitter = function(params, tag_id) {
         }
       },
       "lifetime": {
-        "min": 60,
-        "max": 60
+        "min": 300,
+        "max": 1000
       },
     }
   };
