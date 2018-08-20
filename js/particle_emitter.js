@@ -20,7 +20,7 @@ var particleEmitter = function(params, tag_id) {
         "delta_between_emission": 0
       },
       "general": {
-        "number_of_particles": 20,
+        "number_of_particles": 1,
         "burst": 0,
         "layer": 0,
       },
@@ -43,8 +43,8 @@ var particleEmitter = function(params, tag_id) {
         y: canvas_el.offsetHeight / 2
       },
       "radius": {
-        "min": 10,
-        "max": 20,
+        "min": 3,
+        "max": 10,
         "delta": 0
       },
       "speed": {
@@ -58,8 +58,8 @@ var particleEmitter = function(params, tag_id) {
         "delta": 0
       },
       "color": {
-        "start": "#fff",
-        "middle": "#fff",
+        "start": "#000",
+        "middle": null,
         "end": "#fff"
       },
       "shape": {
@@ -125,30 +125,59 @@ var particleEmitter = function(params, tag_id) {
   };
 
 
+  // for updating the emitter configuration
   particleEmitter.emitter.fn.updateConfig = function(params) {
 
   };
 
+
+  // emitter updates
+  particleEmitter.emitter.fn.emitterUpdates = function(params) {
+
+  };
+
+
   particleEmitter.emitter.fn.draw = function() {
+    // have a sleep timer for the emission delay or the start delay
     particleEmitter.emitter.fn.canvasPaint();
+
+    // create the necessary particles, update
+    particleEmitter.emitter.particleManager.fn.updateParticles();
+    particleEmitter.emitter.particleManager.fn.createParticles(particleEmitter.emitter.general.number_of_particles);
     particleEmitter.emitter.particleManager.fn.drawParticles();
+
     requestAnimFrame(particleEmitter.emitter.fn.draw);
   };
+
+
+  /* ---------- particle emitter functions - utility ------------ */
+  particleEmitter.emitter.fn.convertColorsToRgb = function() {
+    var colors = particleEmitter.particle_manager.color;
+
+    for (var color of Object.keys(colors)) {
+      if (colors[color] == null) {
+        continue;
+      }
+
+      colors[color] = hexToRgb(colors[color]);
+    }
+  }
 
 
   /* ---------- particle emitter functions - particleEmitter ------------ */
 
   particleEmitter.emitter.fn.start = function() {
+    particleEmitter.emitter.fn.convertColorsToRgb();
     particleEmitter.emitter.particleManager = new particleManager(particleEmitter.particle_manager, tag_id);
-    particleEmitter.emitter.particleManager.fn.createParticles(particleEmitter.emitter.general.number_of_particles);
     particleEmitter.emitter.fn.draw();
+
+    // sleep for the emission
     // TODO: call init then call requestAnimFrame to start the animation
   };
 
   particleEmitter.emitter.fn.canvasInit();
   particleEmitter.emitter.fn.start();
 };
-
 
 /* global functions - vendors */
 
@@ -164,6 +193,22 @@ Object.deepExtend = function(destination, source) {
   }
   return destination;
 };
+
+
+function hexToRgb(hex){
+  // By Tim Down - http://stackoverflow.com/a/5624139/3493650
+  // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+  var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+  hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+     return r + r + g + g + b + b;
+  });
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+  } : null;
+}
 
 
 window.requestAnimFrame = (function(){
@@ -224,8 +269,8 @@ window.particleEmitterJS = function(params, tag_id) {
   canvas_el.className = pEmitterJS_canvas_class;
 
   /* set size canvas */
-  canvas_el.style.width = "300px";
-  canvas_el.style.height = "300px";
+  canvas_el.style.width = "500px";
+  canvas_el.style.height = "500px";
 
   /* append canvas */
   var canvas = document.getElementById(tag_id).appendChild(canvas_el);

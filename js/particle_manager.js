@@ -32,9 +32,9 @@ var particleManager = function(params, tag_id) {
       delta: 0
     },
     color: {
-      start: '#fff',
-      middle: '#fff',
-      end: '#fff'
+      start: { r: 255, g: 255, b: 255},
+      middle: null,
+      end: { r: 255, g: 255, b: 255}
     },
     shape: {
       type: 'circle',
@@ -95,6 +95,13 @@ var particleManager = function(params, tag_id) {
 
   /* --------- particleManager functions - particles ----------- */
   particleManager.fn.particle = function() {
+    this.init();
+  };
+
+
+  particleManager.fn.particle.prototype.init = function() {
+    this.inUse = true;
+
     // position
     this.position = {};
     Object.assign(this.position, particleManager.position);
@@ -111,12 +118,15 @@ var particleManager = function(params, tag_id) {
     this.radius = returnNumberInRange(particleManager.radius.min, particleManager.radius.max);
 
     // color
-    this.color = particleManager.color.start;
+    this.colors = {};
+    Object.assign(this.colors, particleManager.color);
+    this.currentColor = rgbToHex(this.colors.start);
 
     // lifetime
     this.birth = Date.now();
     this.lifetime = returnNumberInRange(particleManager.lifetime.min, particleManager.lifetime.max);
-  };
+    this.lifetimeDone = 0;
+  }
 
 
   particleManager.fn.particle.prototype.outOfBounds = function(bounds) {
@@ -134,27 +144,45 @@ var particleManager = function(params, tag_id) {
   };
 
 
-  // check if the particle
+  // check if the particle is dead
   particleManager.fn.particle.prototype.isDead = function(bounds) {
     var particle = this;
-    return Date.now() - particle.birth > particle.lifetime;
+    return particle.lifetimeDone > 1;
   }
 
 
-  // just draw a circle for now
+
   particleManager.fn.particle.prototype.update = function() {
+    var particle = this;
+
+    // determine new position
+    particle.position.x += particle.velocity.x;
+    particle.position.y += particle.velocity.y;
+
+    // determine lifetime
+    particle.lifetimeDone = (Date.now() - particle.birth) / particle.lifetime;
+
+    var current = particle.lifetimeDone < .5 || particle.colors.middle == null
+      ? particle.colors.start : particle.colors.middle;
+
+    var target = particle.lifetimeDone > .5 || particle.colors.middle == null
+        ? particle.colors.end : particle.colors.middle;
+
+    var newRgbColor = colorPercentChange(current, target, particle.lifetimeDone);
+    console.log(newRgbColor);
+    particle.currentColor = rgbToHex(newRgbColor);
   };
 
 
   // just draw a circle for now
   particleManager.fn.particle.prototype.draw = function() {
-    var p = this;
+    var particle = this;
 
-    particleManager.canvas.ctx.fillStyle = '#fff';
+    particleManager.canvas.ctx.fillStyle = particle.currentColor;
     particleManager.canvas.ctx.beginPath();
 
     // just draw a circle for now
-    particleManager.canvas.ctx.arc(p.position.x, p.position.y, p.radius, 0, Math.PI * 2, false);
+    particleManager.canvas.ctx.arc(particle.position.x, particle.position.y, particle.radius, 0, Math.PI * 2, false);
     particleManager.canvas.ctx.closePath();
     particleManager.canvas.ctx.fill();
 
@@ -167,8 +195,13 @@ var particleManager = function(params, tag_id) {
 
     for (var i = particleManager.particles.length - 1; i >= 0; i--) {
       particle = particleManager.particles[i];
-      particle.position.x += particle.velocity.x;
-      particle.position.y += particle.velocity.y;
+
+      // if particle is not in use, continue to the next particle
+      if (!particle.inUse) {
+        continue;
+      }
+
+      particle.update();
 
       // get a birth percent that you can do different things with
       // this will help in changing the color as the particle gets older
@@ -176,23 +209,29 @@ var particleManager = function(params, tag_id) {
       // check the particle for any issues
       if (particle.outOfBounds(particleManager.canvas) || particle.isDead())
       {
+        particle.inUse = false;
         particleManager.particles_not_used_indexes.push(i);
-        particleManager.particles = particleManager.fn.removeParticle(particle);
       }
     }
   };
 
 
-  // create particles
+  // get particle from pool
   particleManager.fn.createParticles = function(particlesLeftToCreate) {
     // first check if we have unused indexes and use them
     var notUsedLength = particleManager.particles_not_used_indexes.length;
     if (notUsedLength > 0) {
-      for (var i = notUsedLength; i >= 0; i--) {
+      for (var i = notUsedLength - 1; i >= 0; i--) {
+        var particleToSet = particleManager.particles[particleManager.particles_not_used_indexes[i]];
+
+        // initialize the particle and remove it from the unused list
+        particleToSet.init();
         particleManager.particles_not_used_indexes.pop();
       }
     }
 
+    // decrement amount of particles to create by amount of particles reused
+    particlesLeftToCreate -= notUsedLength
 
     for (var i = 0; i < particlesLeftToCreate; i++) {
       particleManager.particles.push(new particleManager.fn.particle());
@@ -200,19 +239,8 @@ var particleManager = function(params, tag_id) {
   };
 
 
-  particleManager.fn.removeParticle = function(particle) {
-    var index = particleManager.particles.indexOf(particle);
-    var particlesCopy = particleManager.particles.slice();
-
-    if (index >= 0) {
-      particlesCopy.splice(index, 1);
-      return particlesCopy;
-    }
-  };
-
   particleManager.fn.drawParticles = function() {
     var particle;
-    particleManager.fn.updateParticles();
 
     for (var i = 0; i < particleManager.particles.length; i++) {
       particle = particleManager.particles[i];
@@ -258,27 +286,26 @@ Object.deepExtend = function(destination, source) {
 };
 
 
-window.requestAnimFrame = (function(){
-  return  window.requestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.mozRequestAnimationFrame    ||
-    window.oRequestAnimationFrame      ||
-    window.msRequestAnimationFrame     ||
-    function(callback){
-      window.setTimeout(callback, 1000 / 60);
-    };
-})();
+function colorPercentChange(current, target, percent) {
+  var newRgb = {
+    r: Math.floor(current.r + (target.r - current.r) * percent),
+    g: Math.floor(current.g + (target.g - current.g) * percent),
+    b: Math.floor(current.b + (target.b - current.b) * percent),
+  };
+
+  return newRgb;
+}
 
 
-window.cancelRequestAnimFrame = ( function() {
-  return window.cancelAnimationFrame         ||
-    window.webkitCancelRequestAnimationFrame ||
-    window.mozCancelRequestAnimationFrame    ||
-    window.oCancelRequestAnimationFrame      ||
-    window.msCancelRequestAnimationFrame     ||
-    clearTimeout;
-} )();
+function rgbToHex(color) {
+    return "#" + componentToHex(color.r) + componentToHex(color.g) + componentToHex(color.b);
+}
 
+
+function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
 
 function hexToRgb(hex){
   // By Tim Down - http://stackoverflow.com/a/5624139/3493650
