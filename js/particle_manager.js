@@ -1,5 +1,4 @@
-var particleManager = function(params, tag_id, on_death) {
-  console.log(params);
+var particleManager = function(params, tag_id) {
   // get the canvas context for this particle emmiter
   var canvas_el = document.querySelector('#' + tag_id + ' > .particles-emitter-js-canvas-el');
 
@@ -68,7 +67,6 @@ var particleManager = function(params, tag_id, on_death) {
     Object.deepExtend(particleManager, params);
   }
 
-
   /* ---------- particleManager functions - canvas ------------ */
 
   particleManager.fn.canvasInit = function() {
@@ -101,7 +99,6 @@ var particleManager = function(params, tag_id, on_death) {
     // direction
     var angle = returnNumberInRange(particleManager.direction.min, particleManager.direction.max);
     var speedMagnitude = returnNumberInRange(particleManager.speed.min, particleManager.speed.max);
-    console.log(angle);
 
     this.velocity = {};
     this.velocity.x = speedMagnitude * Math.cos(toRadians(angle));
@@ -122,28 +119,47 @@ var particleManager = function(params, tag_id, on_death) {
   // just draw a circle for now
   particleManager.fn.particle.prototype.draw = function() {
     var p = this;
-    var radius = p.radius;
 
     particleManager.canvas.ctx.fillStyle = '#fff';
     particleManager.canvas.ctx.beginPath();
 
     // just draw a circle for now
-    particleManager.canvas.ctx.arc(p.position.x, p.position.y, radius, 0, Math.PI * 2, false);
+    particleManager.canvas.ctx.arc(p.position.x, p.position.y, p.radius, 0, Math.PI * 2, false);
     particleManager.canvas.ctx.closePath();
     particleManager.canvas.ctx.fill();
 
     // TODO: make it so that images are able to be drawn
   };
 
+  particleManager.fn.particle.prototype.outOfBounds = function(bounds) {
+    var particle = this;
+
+    if (particle.position.x - (particle.radius * 2) > bounds.w - 1 ||
+        particle.position.x + (particle.radius * 2) < 0 ||
+        particle.position.y - (particle.radius * 2) > bounds.h - 1 ||
+        particle.position.y + (particle.radius * 2) < 0)
+    {
+      return true;
+    }
+
+    return false;
+  };
+
   particleManager.fn.updateParticles = function() {
     var particle;
 
-    for (var i = 0; i < particleManager.particles.length; i++) {
-      console.log("Update");
+    for (var i = particleManager.particles.length - 1; i >= 0; i--) {
       particle = particleManager.particles[i];
-      console.log(particle.velocity);
       particle.position.x += particle.velocity.x;
       particle.position.y += particle.velocity.y;
+
+      // check the particle for any issues
+      if (particle.outOfBounds(particleManager.canvas))
+      {
+        particleManager.particles = particleManager.fn.removeParticle(particle);
+      }
+
+      // check if the particles lifetime is over
     }
   };
 
@@ -155,6 +171,16 @@ var particleManager = function(params, tag_id, on_death) {
     }
   };
 
+
+  particleManager.fn.removeParticle = function(particle) {
+    var index = particleManager.particles.indexOf(particle);
+    var particlesCopy = particleManager.particles.slice();
+
+    if (index >= 0) {
+      particlesCopy.splice(index, 1);
+      return particlesCopy;
+    }
+  };
 
   particleManager.fn.drawParticles = function() {
     var particle;
@@ -171,10 +197,9 @@ var particleManager = function(params, tag_id, on_death) {
 
 
   /* ---------- particleManager - start ------------ */
+
   particleManager.fn.canvasInit();
   particleManager.fn.canvasSize();
-  particleManager.fn.canvasPaint();
-
   return particleManager;
 };
 

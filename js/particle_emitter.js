@@ -1,91 +1,87 @@
-// this is the default configuration
-var config =
-{
-  "emitter": {
-    "enabled": true,
-    "spawn_position": {
-      "x": 200,
-      "y": 200
-    },
-    "delay": {
-      "start_delay": 0,
-      "delta_between_emission": 0
-    },
-    "general": {
-      "number_of_particles": 3,
-      "burst": 0,
-      "layer": 0,
-    },
-    "fn": {
-      "vendors": {}
-    }
-  },
-  "particle_manager": {
-    "movement": {
-
-    },
-    "physics": {
-      "gravity_direction_min": 270,
-      "gravity_direction_max": 270,
-      "gravity_magnitude": 0,
-      "force": 0
-    },
-    position: {
-      x: 400,
-      y: 400
-    },
-    "radius": {
-      "min": 3,
-      "max": 20,
-      "delta": 0
-    },
-    "speed": {
-      "min": 1,
-      "max": 5,
-      "delta": 0
-    },
-    "direction": {
-      "min": 0,
-      "max": 359,
-      "delta": 0
-    },
-    "color": {
-      "start": "#fff",
-      "middle": "#fff",
-      "end": "#fff"
-    },
-    "shape": {
-      "type": "circle",
-      "stroke": {
-        "width": 0,
-        "color": "#000"
-      },
-      "polygon": {
-        "number_sides": 5
-      },
-      "image": {
-        "src": "",
-        "width": 100,
-        "height": 100
-      }
-    },
-    "lifetime": {
-      "min": 60,
-      "max": 60
-    },
-  }
-};
-
 /* Particle Emitter */
 var particleEmitter = function(params, tag_id) {
   // set the default configuration
   var canvas_el = document.querySelector('#' + tag_id + ' > .particles-emitter-js-canvas-el');
-  this.particleEmitter = config;
-  this.particleEmitter.emitter.canvas =
-  {
-    el: canvas_el,
-    w: canvas_el.offsetWidth,
-    h: canvas_el.offsetHeight
+
+  this.particleEmitter = {
+    "emitter": {
+      canvas: {
+        el: canvas_el,
+        w: canvas_el.offsetWidth,
+        h: canvas_el.offsetHeight
+      },
+      "enabled": true,
+      "spawn_position": {
+        "x": 200,
+        "y": 200
+      },
+      "delay": {
+        "start_delay": 0,
+        "delta_between_emission": 0
+      },
+      "general": {
+        "number_of_particles": 20,
+        "burst": 0,
+        "layer": 0,
+      },
+      "fn": {
+        "vendors": {}
+      }
+    },
+    "particle_manager": {
+      "movement": {
+
+      },
+      "physics": {
+        "gravity_direction_min": 270,
+        "gravity_direction_max": 270,
+        "gravity_magnitude": 0,
+        "force": 0
+      },
+      position: {
+        x: canvas_el.offsetWidth / 2,
+        y: canvas_el.offsetHeight / 2
+      },
+      "radius": {
+        "min": 20,
+        "max": 20,
+        "delta": 0
+      },
+      "speed": {
+        "min": 1,
+        "max": 5,
+        "delta": 0
+      },
+      "direction": {
+        "min": 0,
+        "max": 359,
+        "delta": 0
+      },
+      "color": {
+        "start": "#fff",
+        "middle": "#fff",
+        "end": "#fff"
+      },
+      "shape": {
+        "type": "circle",
+        "stroke": {
+          "width": 0,
+          "color": "#000"
+        },
+        "polygon": {
+          "number_sides": 5
+        },
+        "image": {
+          "src": "",
+          "width": 100,
+          "height": 100
+        }
+      },
+      "lifetime": {
+        "min": 60,
+        "max": 60
+      },
+    }
   };
 
   var particleEmitter = this.particleEmitter;
@@ -98,7 +94,9 @@ var particleEmitter = function(params, tag_id) {
   /* ---------- particle emitter functions - canvas ------------ */
 
   particleEmitter.emitter.fn.canvasInit = function() {
-    particleEmitter.emitter.canvas.ctx = particleEmitter.emitter.canvas.el.getContext('2d');
+    var canvasOptions = { alpha: false };
+
+    particleEmitter.emitter.canvas.ctx = particleEmitter.emitter.canvas.el.getContext('2d', canvasOptions);
   };
 
 
@@ -109,6 +107,7 @@ var particleEmitter = function(params, tag_id) {
 
 
   particleEmitter.emitter.fn.canvasPaint = function() {
+    particleEmitter.emitter.canvas.ctx.fillStyle = 'black';
     particleEmitter.emitter.canvas.ctx.fillRect(0, 0, particleEmitter.emitter.canvas.w, particleEmitter.emitter.canvas.h);
   };
 
@@ -131,22 +130,22 @@ var particleEmitter = function(params, tag_id) {
   };
 
   particleEmitter.emitter.fn.draw = function() {
-
+    particleEmitter.emitter.fn.canvasPaint();
+    particleEmitter.emitter.particleManager.fn.drawParticles();
+    requestAnimFrame(particleEmitter.emitter.fn.draw);
   };
 
 
   /* ---------- particle emitter functions - particleEmitter ------------ */
 
   particleEmitter.emitter.fn.start = function() {
-    var particle = new particleManager(particleEmitter.particle_manager, tag_id);
-    particle.fn.createParticles(particleEmitter.emitter.general.number_of_particles);
-    for (var i = 0; i < 20; i++) {
-      particle.fn.drawParticles();
-    }
+    particleEmitter.emitter.particleManager = new particleManager(particleEmitter.particle_manager, tag_id);
+    particleEmitter.emitter.particleManager.fn.createParticles(particleEmitter.emitter.general.number_of_particles);
+    particleEmitter.emitter.fn.draw();
     // TODO: call init then call requestAnimFrame to start the animation
   };
 
-
+  particleEmitter.emitter.fn.canvasInit();
   particleEmitter.emitter.fn.start();
 };
 
@@ -225,8 +224,8 @@ window.particleEmitterJS = function(params, tag_id) {
   canvas_el.className = pEmitterJS_canvas_class;
 
   /* set size canvas */
-  canvas_el.style.width = "100%";
-  canvas_el.style.height = "100%";
+  canvas_el.style.width = "300px";
+  canvas_el.style.height = "300px";
 
   /* append canvas */
   var canvas = document.getElementById(tag_id).appendChild(canvas_el);
