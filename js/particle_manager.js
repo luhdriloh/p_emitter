@@ -2,8 +2,11 @@ var particleManager = function(params, tag_id) {
   // get the canvas context for this particle emmiter
   var canvas_el = document.querySelector('#' + tag_id + ' > .particles-emitter-js-canvas-el');
 
+  // create an array of the indexes of the particles that are not in use
+
   this.particleManager = {
     particles: [],
+    particles_not_used_indexes: [],
     canvas: {
       el: canvas_el,
       w: canvas_el.offsetWidth,
@@ -115,20 +118,6 @@ var particleManager = function(params, tag_id) {
     this.lifetime = returnNumberInRange(particleManager.lifetime.min, particleManager.lifetime.max);
   };
 
-  // just draw a circle for now
-  particleManager.fn.particle.prototype.draw = function() {
-    var p = this;
-
-    particleManager.canvas.ctx.fillStyle = '#fff';
-    particleManager.canvas.ctx.beginPath();
-
-    // just draw a circle for now
-    particleManager.canvas.ctx.arc(p.position.x, p.position.y, p.radius, 0, Math.PI * 2, false);
-    particleManager.canvas.ctx.closePath();
-    particleManager.canvas.ctx.fill();
-
-    // TODO: make it so that images are able to be drawn
-  };
 
   particleManager.fn.particle.prototype.outOfBounds = function(bounds) {
     var particle = this;
@@ -144,12 +133,33 @@ var particleManager = function(params, tag_id) {
     return false;
   };
 
+
   // check if the particle
   particleManager.fn.particle.prototype.isDead = function(bounds) {
     var particle = this;
-    console.log(Date.now() - particle.birth);
     return Date.now() - particle.birth > particle.lifetime;
   }
+
+
+  // just draw a circle for now
+  particleManager.fn.particle.prototype.update = function() {
+  };
+
+
+  // just draw a circle for now
+  particleManager.fn.particle.prototype.draw = function() {
+    var p = this;
+
+    particleManager.canvas.ctx.fillStyle = '#fff';
+    particleManager.canvas.ctx.beginPath();
+
+    // just draw a circle for now
+    particleManager.canvas.ctx.arc(p.position.x, p.position.y, p.radius, 0, Math.PI * 2, false);
+    particleManager.canvas.ctx.closePath();
+    particleManager.canvas.ctx.fill();
+
+    // TODO: make it so that images are able to be drawn
+  };
 
 
   particleManager.fn.updateParticles = function() {
@@ -166,6 +176,7 @@ var particleManager = function(params, tag_id) {
       // check the particle for any issues
       if (particle.outOfBounds(particleManager.canvas) || particle.isDead())
       {
+        particleManager.particles_not_used_indexes.push(i);
         particleManager.particles = particleManager.fn.removeParticle(particle);
       }
     }
@@ -173,8 +184,17 @@ var particleManager = function(params, tag_id) {
 
 
   // create particles
-  particleManager.fn.createParticles = function(number_particles) {
-    for (var i = 0; i < number_particles; i++) {
+  particleManager.fn.createParticles = function(particlesLeftToCreate) {
+    // first check if we have unused indexes and use them
+    var notUsedLength = particleManager.particles_not_used_indexes.length;
+    if (notUsedLength > 0) {
+      for (var i = notUsedLength; i >= 0; i--) {
+        particleManager.particles_not_used_indexes.pop();
+      }
+    }
+
+
+    for (var i = 0; i < particlesLeftToCreate; i++) {
       particleManager.particles.push(new particleManager.fn.particle());
     }
   };

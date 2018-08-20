@@ -43,7 +43,7 @@ var particleEmitter = function(params, tag_id) {
         y: canvas_el.offsetHeight / 2
       },
       "radius": {
-        "min": 20,
+        "min": 10,
         "max": 20,
         "delta": 0
       },
@@ -54,7 +54,7 @@ var particleEmitter = function(params, tag_id) {
       },
       "direction": {
         "min": 0,
-        "max": 359,
+        "max": 360,
         "delta": 0
       },
       "color": {
@@ -78,8 +78,8 @@ var particleEmitter = function(params, tag_id) {
         }
       },
       "lifetime": {
-        "min": 300,
-        "max": 1000
+        "min": 500,
+        "max": 1400
       },
     }
   };
