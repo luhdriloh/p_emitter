@@ -147,7 +147,7 @@ var particleManager = function(params, tag_id) {
   // check if the particle is dead
   particleManager.fn.particle.prototype.isDead = function(bounds) {
     var particle = this;
-    return particle.lifetimeDone > 1;
+    return particle.lifetimeDone >= 1;
   }
 
 
@@ -201,17 +201,14 @@ var particleManager = function(params, tag_id) {
         continue;
       }
 
-      particle.update(delta);
-
-      // get a birth percent that you can do different things with
-      // this will help in changing the color as the particle gets older
-
       // check the particle for any issues
       if (particle.outOfBounds(particleManager.canvas) || particle.isDead())
       {
         particle.inUse = false;
         particleManager.particles_not_used_indexes.push(i);
       }
+
+      particle.update(delta);
     }
   };
 
@@ -221,17 +218,14 @@ var particleManager = function(params, tag_id) {
     // first check if we have unused indexes and use them
     var notUsedLength = particleManager.particles_not_used_indexes.length;
     if (notUsedLength > 0) {
-      for (var i = notUsedLength - 1; i >= 0; i--) {
-        var particleToSet = particleManager.particles[particleManager.particles_not_used_indexes[i]];
+      while (particlesLeftToCreate > 0 && particleManager.particles_not_used_indexes.length > 0) {
+        var particleToSet = particleManager.particles[particleManager.particles_not_used_indexes.pop()];
 
         // initialize the particle and remove it from the unused list
         particleToSet.init();
-        particleManager.particles_not_used_indexes.pop();
+        particlesLeftToCreate--;
       }
     }
-
-    // decrement amount of particles to create by amount of particles reused
-    particlesLeftToCreate -= notUsedLength
 
     for (var i = 0; i < particlesLeftToCreate; i++) {
       particleManager.particles.push(new particleManager.fn.particle());
@@ -244,6 +238,11 @@ var particleManager = function(params, tag_id) {
 
     for (var i = 0; i < particleManager.particles.length; i++) {
       particle = particleManager.particles[i];
+
+      if (!particle.inUse) {
+        continue;
+      }
+
       particle.draw();
     }
   };

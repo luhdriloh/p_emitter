@@ -5,10 +5,11 @@ var particleEmitter = function(params, tag_id) {
 
   this.particleEmitter = {
     "emitter": {
-      canvas: {
-        el: canvas_el,
-        w: canvas_el.offsetWidth,
-        h: canvas_el.offsetHeight
+      "canvas": {
+        "el": canvas_el,
+        "w": canvas_el.offsetWidth,
+        "h": canvas_el.offsetHeight,
+        "last_draw_time": 0
       },
       "enabled": true,
       "spawn_position": {
@@ -16,12 +17,12 @@ var particleEmitter = function(params, tag_id) {
         "y": 200
       },
       "delay": {
-        "start_delay": 0,
-        "last_emission_time": 0,
+        "start_delay": 100,
+        "emission_delta": Number.MAX_SAFE_INTEGER,
         "delta_between_emission": 100
       },
       "general": {
-        "number_of_particles": 1,
+        "number_of_particles": 2,
         "burst": 0,
         "layer": 0,
       },
@@ -44,14 +45,14 @@ var particleEmitter = function(params, tag_id) {
         y: canvas_el.offsetHeight / 2
       },
       "radius": {
-        "min": 3,
-        "max": 10,
+        "min": 1,
+        "max": 40,
         "delta": 0
       },
       // pixels a second
       "speed": {
-        "min": 10,
-        "max": 100,
+        "min": 30,
+        "max": 200,
         "delta": 0
       },
       "direction": {
@@ -141,15 +142,21 @@ var particleEmitter = function(params, tag_id) {
 
   particleEmitter.emitter.fn.draw = function() {
     var now = Date.now();
-    var emissionDelta = now - particleEmitter.emitter.delay.last_emission_time;
-    particleEmitter.emitter.delay.last_emission_time = now;
+    var timeBetweenDraws = now - particleEmitter.emitter.canvas.last_draw_time;
+    particleEmitter.emitter.canvas.last_draw_time = now;
 
     // have a sleep timer for the emission delay or the start delay
     particleEmitter.emitter.fn.canvasPaint();
 
-    // create the necessary particles, update
-    particleEmitter.emitter.particleManager.fn.updateParticles(emissionDelta);
-    particleEmitter.emitter.particleManager.fn.createParticles(particleEmitter.emitter.general.number_of_particles);
+    // only create particles after the emission delay
+    particleEmitter.emitter.particleManager.fn.updateParticles(timeBetweenDraws);
+
+    particleEmitter.emitter.delay.emission_delta += timeBetweenDraws;
+    if (particleEmitter.emitter.delay.emission_delta >= particleEmitter.emitter.delay.delta_between_emission) {
+      particleEmitter.emitter.particleManager.fn.createParticles(particleEmitter.emitter.general.number_of_particles);
+      particleEmitter.emitter.delay.emission_delta = 0;
+    }
+
     particleEmitter.emitter.particleManager.fn.drawParticles();
 
     requestAnimFrame(particleEmitter.emitter.fn.draw);
@@ -177,6 +184,7 @@ var particleEmitter = function(params, tag_id) {
     particleEmitter.emitter.particleManager = new particleManager(particleEmitter.particle_manager, tag_id);
 
     await sleep(particleEmitter.emitter.delay.start_delay);
+    particleEmitter.emitter.canvas.last_draw_time = Date.now();
     particleEmitter.emitter.fn.draw();
 
     // sleep for the emission
