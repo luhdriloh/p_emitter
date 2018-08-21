@@ -31,6 +31,10 @@ var particleManager = function(params, tag_id) {
       max: 359,
       delta: 0
     },
+    "physics": {
+      "gravity_magnitude": 0,
+      "gravity_angle": 0
+    },
     color: {
       start: { r: 255, g: 255, b: 255},
       middle: null,
@@ -108,11 +112,21 @@ var particleManager = function(params, tag_id) {
 
     // direction
     this.angle = returnNumberInRange(particleManager.direction.min, particleManager.direction.max) * -1;
-    this.speedMagnitude = returnNumberInRange(particleManager.speed.min, particleManager.speed.max);
+    var speedMagnitude = returnNumberInRange(particleManager.speed.min, particleManager.speed.max);
 
     this.velocity = {};
-    this.velocity.x = this.speedMagnitude * Math.cos(toRadians(this.angle));
-    this.velocity.y = this.speedMagnitude * Math.sin(toRadians(this.angle));
+    this.velocity.x = speedMagnitude * Math.cos(toRadians(this.angle));
+    this.velocity.y = speedMagnitude * Math.sin(toRadians(this.angle));
+
+    this.delta = {};
+    this.delta.x = particleManager.speed.delta * Math.cos(toRadians(this.angle));
+    this.delta.y = particleManager.speed.delta * Math.sin(toRadians(this.angle));
+
+
+    var gravityAngle = particleManager.physics.gravity_angle * -1;
+    this.gravity = {};
+    this.gravity.x = Math.floor(particleManager.physics.gravity_magnitude * Math.cos(toRadians(gravityAngle)));
+    this.gravity.y = Math.floor(particleManager.physics.gravity_magnitude * Math.sin(toRadians(gravityAngle)));
 
     // radius
     this.radius = returnNumberInRange(particleManager.radius.min, particleManager.radius.max);
@@ -161,6 +175,10 @@ var particleManager = function(params, tag_id) {
     particle.position.x += particle.velocity.x * percentSecond;
     particle.position.y += particle.velocity.y * percentSecond;
 
+    // determine new velocity
+    particle.velocity.x += (particle.gravity.x + particle.delta.x) * percentSecond;
+    particle.velocity.y += (particle.gravity.y + particle.delta.y) * percentSecond;
+
     // determine lifetime
     particle.lifetimeDone = (Date.now() - particle.birth) / particle.lifetime;
 
@@ -173,10 +191,8 @@ var particleManager = function(params, tag_id) {
     var newRgbColor = colorPercentChange(current, target, particle.lifetimeDone);
     particle.currentColor = rgbToHex(newRgbColor);
 
+    // determine new radius
     particle.currentRadius += percentSecond * particleManager.radius.delta;
-    particle.speedMagnitude += percentSecond * particleManager.speed.delta;
-    particle.velocity.x = particle.speedMagnitude * Math.cos(toRadians(particle.angle));
-    particle.velocity.y = particle.speedMagnitude * Math.sin(toRadians(particle.angle));
   };
 
 
