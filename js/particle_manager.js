@@ -31,9 +31,9 @@ var particleManager = function(params, tag_id) {
       max: 359,
       delta: 0
     },
-    "physics": {
-      "gravity_magnitude": 0,
-      "gravity_angle": 0
+    physics: {
+      gravity_magnitude: 0,
+      gravity_angle: 0
     },
     color: {
       start: { r: 255, g: 255, b: 255},
@@ -50,6 +50,7 @@ var particleManager = function(params, tag_id) {
         number_sides: 5
       },
       image: {
+        img_obj: null,
         src: '',
         width: 100,
         height: 100
@@ -111,16 +112,16 @@ var particleManager = function(params, tag_id) {
     Object.assign(this.position, particleManager.position);
 
     // direction
-    this.angle = returnNumberInRange(particleManager.direction.min, particleManager.direction.max) * -1;
+    var speedAngle = returnNumberInRange(particleManager.direction.min, particleManager.direction.max) * -1;
     var speedMagnitude = returnNumberInRange(particleManager.speed.min, particleManager.speed.max);
 
     this.velocity = {};
-    this.velocity.x = speedMagnitude * Math.cos(toRadians(this.angle));
-    this.velocity.y = speedMagnitude * Math.sin(toRadians(this.angle));
+    this.velocity.x = speedMagnitude * Math.cos(toRadians(speedAngle));
+    this.velocity.y = speedMagnitude * Math.sin(toRadians(speedAngle));
 
     this.delta = {};
-    this.delta.x = particleManager.speed.delta * Math.cos(toRadians(this.angle));
-    this.delta.y = particleManager.speed.delta * Math.sin(toRadians(this.angle));
+    this.delta.x = particleManager.speed.delta * Math.cos(toRadians(speedAngle));
+    this.delta.y = particleManager.speed.delta * Math.sin(toRadians(speedAngle));
 
 
     var gravityAngle = particleManager.physics.gravity_angle * -1;
@@ -142,8 +143,11 @@ var particleManager = function(params, tag_id) {
     this.lifetime = returnNumberInRange(particleManager.lifetime.min, particleManager.lifetime.max);
     this.lifetimeDone = 0;
 
-    // add the different types of shapes
-  }
+    // set shape or image
+    this.shape = particleManager.shape.type;
+    this.imageRatio = particleManager.shape.image.width / particleManager.shape.image.height;
+    this.image = particleManager.shape.image.img_obj;
+  };
 
 
   particleManager.fn.particle.prototype.outOfBounds = function(bounds) {
@@ -165,7 +169,7 @@ var particleManager = function(params, tag_id) {
   particleManager.fn.particle.prototype.isDead = function() {
     var particle = this;
     return particle.lifetimeDone >= 1;
-  }
+  };
 
 
 
@@ -184,11 +188,11 @@ var particleManager = function(params, tag_id) {
     // determine lifetime
     particle.lifetimeDone = (Date.now() - particle.birth) / particle.lifetime;
 
-    var current = particle.lifetimeDone < .5 || particle.colors.middle == null
-      ? particle.colors.start : particle.colors.middle;
+    var current = particle.lifetimeDone < 0.5 || particle.colors.middle == null ?
+      particle.colors.start : particle.colors.middle;
 
-    var target = particle.lifetimeDone > .5 || particle.colors.middle == null
-        ? particle.colors.end : particle.colors.middle;
+    var target = particle.lifetimeDone > 0.5 || particle.colors.middle == null ?
+      particle.colors.end : particle.colors.middle;
 
     var newRgbColor = colorPercentChange(current, target, particle.lifetimeDone);
     particle.currentColor = rgbToHex(newRgbColor);
@@ -201,16 +205,62 @@ var particleManager = function(params, tag_id) {
   // just draw a circle for now
   particleManager.fn.particle.prototype.draw = function(ctx) {
     var particle = this;
+    var x = particle.position.x;
+    var y = particle.position.y;
+    var radius = particle.currentRadius;
+    var nb_sides = particleManager.shape.polygon.number_sides;
 
     ctx.fillStyle = particle.currentColor;
     ctx.beginPath();
 
-    // just draw a circle for now
-    ctx.arc(particle.position.x, particle.position.y, particle.currentRadius, 0, Math.PI * 2, false);
+    console.log('drawing: ' + particle.shape);
+    switch(particle.shape) {
+      case 'circle':
+        ctx.arc(x, y, radius, 0, Math.PI * 2, false);
+        break;
+
+      case 'triangle':
+        particleManager.fn.vendors.drawShape(ctx, x - radius, y + radius / 1.66, radius * 2, 3, 2);
+        break;
+
+      case 'box':
+        ctx.rect(x - radius, y - radius, radius * 2, radius * 2);
+        break;
+
+      case 'polygon':
+        particleManager.fn.vendors.drawShape(
+          ctx,
+          x - radius / (nb_sides / 3.5), // startX
+          y - radius / (2.66 / 3.5), // startY
+          radius*2.66 / (nb_sides / 3), // sideLength
+          nb_sides, // sideCountNumerator
+          1 // sideCountDenominator
+        );
+        break;
+
+      case 'star':
+        particleManager.fn.vendors.drawShape(
+          ctx,
+          x - radius * 2 / (nb_sides / 4), // startX
+          y - radius / (2.66 / 3.5), // startY
+          radius * 2 * 2.66 / (nb_sides / 3), // sideLength
+          nb_sides, // sideCountNumerator
+          2 // sideCountDenominator
+        );
+        break;
+
+      case 'image':
+        ctx.drawImage(particle.image,
+          x - radius,
+          y - radius,
+          radius * 2,
+          radius * 2 / particle.imageRatio);
+        break;
+    }
+
+
     ctx.closePath();
     ctx.fill();
-
-    // TODO: make it so that images are able to be drawn
   };
 
 
@@ -272,7 +322,30 @@ var particleManager = function(params, tag_id) {
   };
 
 
-  /* ---------- particleManager functions - modes events ------------ */
+
+
+  /* ---------- particleManager functions - vendors ------------ */
+
+  particleManager.fn.vendors.drawShape = function(ctx, startX, startY, sideLength, sideCountNumerator, sideCountDenominator){
+
+    // By Programming Thomas - https://programmingthomas.wordpress.com/2013/04/03/n-sided-shapes/
+    var sideCount = sideCountNumerator * sideCountDenominator;
+    var decimalSides = sideCountNumerator / sideCountDenominator;
+    var interiorAngleDegrees = (180 * (decimalSides - 2)) / decimalSides;
+    var interiorAngle = Math.PI - Math.PI * interiorAngleDegrees / 180; // convert to radians
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(startX, startY);
+    ctx.moveTo(0,0);
+    for (var i = 0; i < sideCount; i++) {
+      ctx.lineTo(sideLength,0);
+      ctx.translate(sideLength,0);
+      ctx.rotate(interiorAngle);
+    }
+    //ctx.stroke();
+    ctx.fill();
+    ctx.restore();
+  };
 
 
   /* ---------- particleManager - start ------------ */

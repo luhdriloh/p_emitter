@@ -23,7 +23,7 @@ var particleEmitter = function(params, tag_id) {
         "delta_between_emission": 100
       },
       "general": {
-        "number_of_particles": 10,
+        "number_of_particles": 1,
         "burst": 0,
         "layer": 0,
       },
@@ -36,8 +36,8 @@ var particleEmitter = function(params, tag_id) {
 
       },
       "physics": {
-        "gravity_magnitude": 100,
-        "gravity_angle": 80
+        "gravity_magnitude": 90,
+        "gravity_angle": 90
       },
       "position": {
         "x": canvas_el.offsetWidth / 2,
@@ -52,7 +52,7 @@ var particleEmitter = function(params, tag_id) {
       "speed": {
         "min": 70,
         "max": 120,
-        "delta": -125
+        "delta": -100
       },
       "direction": {
         "min": 0,
@@ -65,7 +65,7 @@ var particleEmitter = function(params, tag_id) {
         "end": "#000"
       },
       "shape": {
-        "type": "circle",
+        "type": "image",
         "stroke": {
           "width": 0,
           "color": "#000"
@@ -74,9 +74,10 @@ var particleEmitter = function(params, tag_id) {
           "number_sides": 5
         },
         "image": {
-          "src": "",
-          "width": 100,
-          "height": 100
+          "img_obj": null,
+          "src": "particles/star.png",
+          "width": 0,
+          "height": 0
         }
       },
       "lifetime": {
@@ -159,7 +160,32 @@ var particleEmitter = function(params, tag_id) {
   };
 
 
-  /* ---------- particle emitter functions - utility ------------ */
+  /* ---------- particle emitter functions - vendors ------------ */
+
+
+  particleEmitter.emitter.fn.vendors.loadImage = function() {
+    var shape = particleEmitter.particle_manager.shape;
+
+    // if there is an image wait for it then call start
+    if (shape.type == 'image' &&  shape.image.src != '') {
+      var img = new Image();
+      img.onload = function() {
+        // set the width and the height of the image
+        particleEmitter.particle_manager.shape.image.width = this.width;
+        particleEmitter.particle_manager.shape.image.height = this.height;
+
+        // set the image object
+        particleEmitter.particle_manager.shape.image.img_obj = img;
+        particleEmitter.emitter.fn.start();
+      };
+
+      img.src = particleEmitter.particle_manager.shape.image.src;
+    }
+    else {
+      particleEmitter.emitter.fn.start();
+    }
+  };
+
   particleEmitter.emitter.fn.convertColorsToRgb = function() {
     var colors = particleEmitter.particle_manager.color;
 
@@ -188,7 +214,7 @@ var particleEmitter = function(params, tag_id) {
   };
 
   particleEmitter.emitter.fn.canvasInit();
-  particleEmitter.emitter.fn.start();
+  particleEmitter.emitter.fn.vendors.loadImage();
 };
 
 /* global functions - vendors */
@@ -220,7 +246,7 @@ function setBackgroundCanvas(canvas_el) {
     var background;
 
     for (var col = 0; col <= canvas_el.offsetWidth; col += 10) {
-      background = currentColorBlack ? "#333733" : "#999d99";
+      background = currentColorBlack ? "#eee" : "#bbbbbc";
       ctx.fillStyle = background;
       ctx.fillRect(col, row, 10, 10);
 
