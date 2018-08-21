@@ -10,7 +10,7 @@ var particleEmitter = function(params, tag_id) {
         "w": canvas_el.offsetWidth,
         "h": canvas_el.offsetHeight,
         "last_draw_time": 0,
-        "background_color": "#000"
+        "background_color": null
       },
       "enabled": true,
       "spawn_position": {
@@ -36,8 +36,8 @@ var particleEmitter = function(params, tag_id) {
 
       },
       "physics": {
-        "gravity_magnitude": 500,
-        "gravity_angle": 90
+        "gravity_magnitude": 100,
+        "gravity_angle": 80
       },
       "position": {
         "x": canvas_el.offsetWidth / 2,
@@ -46,13 +46,13 @@ var particleEmitter = function(params, tag_id) {
       "radius": {
         "min": 10,
         "max": 30,
-        "delta": -10
+        "delta": -20
       },
       // pixels a second
       "speed": {
         "min": 70,
         "max": 120,
-        "delta": -100
+        "delta": -125
       },
       "direction": {
         "min": 0,
@@ -60,7 +60,7 @@ var particleEmitter = function(params, tag_id) {
         "delta": 0
       },
       "color": {
-        "start": "#fff",
+        "start": "#000",
         "middle": "f00",
         "end": "#000"
       },
@@ -137,7 +137,12 @@ var particleEmitter = function(params, tag_id) {
     particleEmitter.emitter.canvas.last_draw_time = now;
 
     // have a sleep timer for the emission delay or the start delay
-    particleEmitter.emitter.fn.canvasPaint();
+    if (particleEmitter.emitter.canvas.background == null) {
+      particleEmitter.emitter.fn.canvasClear();
+    }
+    else {
+      particleEmitter.emitter.fn.canvasPaint();
+    }
 
     // only create particles after the emission delay
     particleEmitter.emitter.particleManager.fn.updateParticles(timeBetweenDraws);
@@ -209,8 +214,6 @@ function setBackgroundCanvas(canvas_el) {
   var ctx = canvas_el.getContext('2d');
   var rowColorBlack = true;
   var currentColorBlack = true;
-
-  console.log(canvas_el.offsetHeight);
 
   for (var row = 0; row <= canvas_el.offsetHeight; row += 10) {
     currentColorBlack = rowColorBlack;

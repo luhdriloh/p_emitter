@@ -141,6 +141,8 @@ var particleManager = function(params, tag_id) {
     this.birth = Date.now();
     this.lifetime = returnNumberInRange(particleManager.lifetime.min, particleManager.lifetime.max);
     this.lifetimeDone = 0;
+
+    // add the different types of shapes
   }
 
 
@@ -160,7 +162,7 @@ var particleManager = function(params, tag_id) {
 
 
   // check if the particle is dead
-  particleManager.fn.particle.prototype.isDead = function(bounds) {
+  particleManager.fn.particle.prototype.isDead = function() {
     var particle = this;
     return particle.lifetimeDone >= 1;
   }
@@ -197,16 +199,16 @@ var particleManager = function(params, tag_id) {
 
 
   // just draw a circle for now
-  particleManager.fn.particle.prototype.draw = function() {
+  particleManager.fn.particle.prototype.draw = function(ctx) {
     var particle = this;
 
-    particleManager.canvas.ctx.fillStyle = particle.currentColor;
-    particleManager.canvas.ctx.beginPath();
+    ctx.fillStyle = particle.currentColor;
+    ctx.beginPath();
 
     // just draw a circle for now
-    particleManager.canvas.ctx.arc(particle.position.x, particle.position.y, particle.currentRadius, 0, Math.PI * 2, false);
-    particleManager.canvas.ctx.closePath();
-    particleManager.canvas.ctx.fill();
+    ctx.arc(particle.position.x, particle.position.y, particle.currentRadius, 0, Math.PI * 2, false);
+    ctx.closePath();
+    ctx.fill();
 
     // TODO: make it so that images are able to be drawn
   };
@@ -265,7 +267,7 @@ var particleManager = function(params, tag_id) {
         continue;
       }
 
-      particle.draw();
+      particle.draw(particleManager.canvas.ctx);
     }
   };
 
@@ -281,7 +283,6 @@ var particleManager = function(params, tag_id) {
 };
 
 /* ---------- particles.js functions - start ------------ */
-
 
 
 
