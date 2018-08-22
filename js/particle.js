@@ -102,7 +102,7 @@ var particle = function(params) {
         break;
 
       case 'triangle':
-        particleManager.fn.vendors.drawShape(ctx, this.position.x - this.currentRadius, y + this.currentRadius / 1.66, this.currentRadius * 2, 3, 2);
+        Utils.drawShape(ctx, this.position.x - this.currentRadius, this.position.y + this.currentRadius / 1.66, this.currentRadius * 2, 3, 2);
         break;
 
       case 'box':
@@ -110,7 +110,7 @@ var particle = function(params) {
         break;
 
       case 'polygon':
-        particleManager.fn.vendors.drawShape(
+        Utils.drawShape(
           ctx,
           this.position.x - this.currentRadius / (this.sides / 3.5), // startX
           this.position.y - this.currentRadius / (2.66 / 3.5), // startY
@@ -121,10 +121,10 @@ var particle = function(params) {
         break;
 
       case 'star':
-        particleManager.fn.vendors.drawShape(
+        Utils.drawShape(
           ctx,
           this.position.x - this.currentRadius * 2 / (this.sides / 4), // startX
-          this.position.x - this.currentRadius / (2.66 / 3.5), // startY
+          this.position.y - this.currentRadius / (2.66 / 3.5), // startY
           this.currentRadius * 2 * 2.66 / (this.sides / 3), // sideLength
           this.sides, // sideCountNumerator
           2 // sideCountDenominator
@@ -132,11 +132,12 @@ var particle = function(params) {
         break;
 
       case 'image':
-        ctx.drawImage(this.image,
+        ctx.drawImage(
+          this.image,
           this.position.x - this.currentRadius,
           this.position.y - this.currentRadius,
           this.currentRadius * 2,
-          this.currentRadius * 2 / particle.imageRatio);
+          this.currentRadius * 2 / this.imageRatio);
         break;
     }
 

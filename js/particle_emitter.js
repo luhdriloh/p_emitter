@@ -25,10 +25,10 @@ var particleEmitter = function(params, tag_id) {
     "delay": {
       "start_delay": 100,
       "emission_delta": Number.MAX_SAFE_INTEGER,
-      "delta_between_emission": 100
+      "delta_between_emission": 0
     },
     "general": {
-      "number_of_particles": 10,
+      "number_of_particles": 1,
       "burst": 0,
       "layer": 0,
     },
@@ -41,7 +41,7 @@ var particleEmitter = function(params, tag_id) {
 
         },
         "physics": {
-          "gravity_magnitude": 1200,
+          "gravity_magnitude": 0,
           "gravity_angle": 90
         },
         "position": {
@@ -50,8 +50,8 @@ var particleEmitter = function(params, tag_id) {
         },
         "radius": {
           "min": 10,
-          "max": 50,
-          "delta": -20
+          "max": 40,
+          "delta": 0
         },
         // pixels a second
         "speed": {
@@ -70,7 +70,7 @@ var particleEmitter = function(params, tag_id) {
           "end": "#000"
         },
         "shape": {
-          "type": "circle",
+          "type": "image",
           "stroke": {
             "width": 0,
             "color": "#000"
