@@ -1,0 +1,74 @@
+{
+  "enabled": true,
+  "spawn_position": {
+    "x": 200,
+    "y": 200
+  },
+  "delay": {
+    "start_delay": 100,
+    "emission_delta": 1,
+    "delta_between_emission": 0
+  },
+  "general": {
+    "number_of_particles": 1,
+    "burst": 0,
+    "layer": 0,
+  },
+  "fn": {
+    "vendors": {}
+  },
+  "particles" :
+  {
+      "movement": {
+
+      },
+      "physics": {
+        "gravity_magnitude": 0,
+        "gravity_angle": 90
+      },
+      "position": {
+        "x": 1,
+        "y": 1
+      },
+      "radius": {
+        "min": 10,
+        "max": 50,
+        "delta": -20
+      },
+      "speed": {
+        "min": 70,
+        "max": 300,
+        "delta": 0
+      },
+      "direction": {
+        "min": 0,
+        "max": 360,
+        "delta": 0
+      },
+      "color": {
+        "start": "#000",
+        "middle": "f00",
+        "end": "#000"
+      },
+      "shape": {
+        "type": "circle",
+        "stroke": {
+          "width": 0,
+          "color": "#000"
+        },
+        "polygon": {
+          "number_sides": 5
+        },
+        "image": {
+          "img_obj": null,
+          "src": "particles/star.png",
+          "width": 0,
+          "height": 0
+        }
+      },
+      "lifetime": {
+        "min": 800,
+        "max": 1700
+      }
+    }
+}
